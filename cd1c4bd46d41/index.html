@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Chat</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel-2: #1c2333;
+    --border: #2d333b;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #f55036;
+    --accent-2: #ff7a45;
+    --user-bubble: #2a4a7f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+  }
+  header .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+  header h1 { font-size: 16px; font-weight: 600; }
+  header .spacer { flex: 1; }
+  header button {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 8px; padding: 5px 10px; cursor: pointer; font-size: 13px;
+  }
+  header button:hover { color: var(--text); border-color: var(--muted); }
+
+  main { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 78%; padding: 10px 14px; border-radius: 14px; line-height: 1.5; font-size: 15px; white-space: pre-wrap; word-wrap: break-word; }
+  .msg.user { align-self: flex-end; background: var(--user-bubble); border-bottom-right-radius: 4px; }
+  .msg.bot { align-self: flex-start; background: var(--panel-2); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+  .msg.bot.error { border-color: #b62324; color: #ffa198; }
+  .msg.typing { display: flex; gap: 5px; align-items: center; padding: 14px; }
+  .msg.typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite; }
+  .msg.typing span:nth-child(2) { animation-delay: 0.2s; }
+  .msg.typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
+
+  footer { padding: 14px 20px 18px; background: var(--panel); border-top: 1px solid var(--border); }
+  .inputrow { display: flex; gap: 10px; max-width: 860px; margin: 0 auto; }
+  textarea {
+    flex: 1; resize: none; background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 12px; color: var(--text); padding: 12px 14px; font-size: 15px;
+    font-family: inherit; min-height: 48px; max-height: 160px; outline: none;
+  }
+  textarea:focus { border-color: var(--accent); }
+  #send {
+    background: var(--accent); border: none; color: #fff; border-radius: 12px;
+    padding: 0 20px; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  #send:hover { background: var(--accent-2); }
+  #send:disabled { opacity: 0.5; cursor: default; }
+  .hint { text-align: center; color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+  .gate {
+    position: fixed; inset: 0; background: var(--bg); z-index: 10;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .gate .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    padding: 32px; width: 100%; max-width: 380px; text-align: center;
+  }
+  .gate .lock { font-size: 40px; margin-bottom: 10px; }
+  .gate h2 { font-size: 20px; margin-bottom: 6px; }
+  .gate p { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  .gate input {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); padding: 12px 14px; font-size: 15px;
+    outline: none; margin-bottom: 12px; text-align: center;
+  }
+  .gate input:focus { border-color: var(--accent); }
+  .gate button {
+    width: 100%; background: var(--accent); border: none; color: #fff;
+    border-radius: 10px; padding: 12px; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .gate button:hover { background: var(--accent-2); }
+  .gate .err { color: #ffa198; font-size: 13px; margin-top: 10px; min-height: 16px; }
+
+  .setup {
+    position: fixed; inset: 0; background: rgba(13,17,23,0.92); z-index: 9;
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .setup .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    padding: 32px; width: 100%; max-width: 380px; text-align: center;
+  }
+  .setup h2 { font-size: 18px; margin-bottom: 14px; }
+  .setup select {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); padding: 11px 14px; font-size: 14px;
+    outline: none; margin-bottom: 12px;
+  }
+  .setup select:focus { border-color: var(--accent); }
+  .setup button {
+    width: 100%; background: var(--accent); border: none; color: #fff;
+    border-radius: 10px; padding: 12px; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .setup button:hover { background: var(--accent-2); }
+
+  @media (max-width: 600px) {
+    .msg { max-width: 90%; }
+    main { padding: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="card">
+    <div class="lock">🔒</div>
+    <h2>Private Chatbot</h2>
+    <p>Use the password to use the chatbot.</p>
+    <input type="password" id="gatePass" placeholder="Enter password" autocomplete="off">
+    <button id="gateBtn">Unlock chat</button>
+    <div class="err" id="gateErr"></div>
+  </div>
+</div>
+
+<div class="setup" id="setup">
+  <div class="card">
+    <h2>⚙️ AI model</h2>
+    <select id="modelSelect">
+      <option value="llama-3.3-70b-versatile">Llama 3.3 70B (smart)</option>
+      <option value="llama-3.1-8b-instant">Llama 3.1 8B (fast)</option>
+      <option value="openai/gpt-oss-120b">GPT-OSS 120B</option>
+      <option value="openai/gpt-oss-20b">GPT-OSS 20B</option>
+    </select>
+    <button id="saveModel">Save</button>
+  </div>
+</div>
+
+<header>
+  <div class="dot"></div>
+  <h1>Private AI Chat</h1>
+  <div class="spacer"></div>
+  <button id="settingsBtn" title="Model settings">⚙ Model</button>
+  <button id="clearBtn" title="Clear conversation">🗑 Clear</button>
+</header>
+
+<main id="chat">
+  <div class="msg bot">Hi! This is a private AI chat. Ask me anything. 👋</div>
+</main>
+
+<footer>
+  <div class="inputrow">
+    <textarea id="input" rows="1" placeholder="Type a message… (Enter to send, Shift+Enter for a new line)"></textarea>
+    <button id="send">Send</button>
+  </div>
+  <div class="hint">Powered by Groq</div>
+</footer>
+
+<script>
+  const PASS_HASH = "f5ed5252baaab2792557554b48cd3b7a41a27c309bda4ed1f6765f51561ecc3b";
+  const KEY_BLOB = {"salt":"ZAtRRF6jBomjQco0HH9ogQ==","iv":"bFt8vVVAfFlHooWf","data":"FCjqU8l48wJ/meM/PRntnYjey1W79Wc6o+m77IaZKfdu0Fj4YtnUbiaRMB54Dbq3bjU6TVmCsAlaSEOfLqAxmAAovbInogaj"};
+  const API_URL = "https://api.groq.com/openai/v1/chat/completions";
+  const DEFAULT_MODEL = "llama-3.3-70b-versatile";
+  const SYSTEM_PROMPT = "You are a friendly, helpful assistant on a small private website. Keep answers clear and concise.";
+
+  const gate = document.getElementById("gate");
+  const gatePass = document.getElementById("gatePass");
+  const gateBtn = document.getElementById("gateBtn");
+  const gateErr = document.getElementById("gateErr");
+  const setup = document.getElementById("setup");
+  const modelSelect = document.getElementById("modelSelect");
+  const saveModelBtn = document.getElementById("saveModel");
+  const settingsBtn = document.getElementById("settingsBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  const chat = document.getElementById("chat");
+  const input = document.getElementById("input");
+  const sendBtn = document.getElementById("send");
+
+  let history = [];
+  let busy = false;
+  let apiKey = null;
+
+  async function sha256(text) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  const b64 = {
+    enc: buf => btoa(String.fromCharCode(...new Uint8Array(buf))),
+    dec: str => Uint8Array.from(atob(str), c => c.charCodeAt(0))
+  };
+
+  async function deriveKey(pass, salt) {
+    const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
+    return crypto.subtle.deriveKey(
+      { name: "PBKDF2", salt, iterations: 150000, hash: "SHA-256" },
+      base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]
+    );
+  }
+
+  async function decryptKey(pass) {
+    const key = await deriveKey(pass, b64.dec(KEY_BLOB.salt));
+    const plain = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: b64.dec(KEY_BLOB.iv) },
+      key, b64.dec(KEY_BLOB.data)
+    );
+    return new TextDecoder().decode(plain);
+  }
+
+  function unlock() {
+    gate.style.display = "none";
+    input.focus();
+  }
+
+  async function tryUnlock() {
+    const pass = gatePass.value;
+    const h = await sha256(pass);
+    if (h !== PASS_HASH) {
+      gateErr.textContent = "Wrong password. Try again.";
+      gatePass.value = "";
+      gatePass.focus();
+      return;
+    }
+    if (KEY_BLOB) {
+      try {
+        apiKey = await decryptKey(pass);
+      } catch (e) {
+        gateErr.textContent = "Could not unlock the AI key. Check the password.";
+        return;
+      }
+    }
+    sessionStorage.setItem("chat_pass", pass);
+    unlock();
+  }
+
+  gateBtn.addEventListener("click", tryUnlock);
+  gatePass.addEventListener("keydown", e => { if (e.key === "Enter") tryUnlock(); });
+
+  const savedPass = sessionStorage.getItem("chat_pass");
+  if (savedPass) {
+    sha256(savedPass).then(async h => {
+      if (h !== PASS_HASH) return;
+      if (KEY_BLOB) {
+        try { apiKey = await decryptKey(savedPass); } catch (e) { return; }
+      }
+      unlock();
+    });
+  }
+
+  saveModelBtn.addEventListener("click", () => {
+    localStorage.setItem("chat_model", modelSelect.value);
+    setup.style.display = "none";
+    input.focus();
+  });
+
+  settingsBtn.addEventListener("click", () => {
+    modelSelect.value = localStorage.getItem("chat_model") || DEFAULT_MODEL;
+    setup.style.display = "flex";
+  });
+
+  clearBtn.addEventListener("click", () => {
+    history = [];
+    chat.innerHTML = "";
+    addMsg("bot", "Conversation cleared. What's next?");
+  });
+
+  function addMsg(role, text, cls) {
+    const div = document.createElement("div");
+    div.className = "msg " + role + (cls ? " " + cls : "");
+    div.textContent = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    return div;
+  }
+
+  function showTyping() {
+    const div = document.createElement("div");
+    div.className = "msg bot typing";
+    div.id = "typing";
+    div.innerHTML = "<span></span><span></span><span></span>";
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+  }
+  function hideTyping() {
+    const t = document.getElementById("typing");
+    if (t) t.remove();
+  }
+
+  function setBusy(v) {
+    busy = v;
+    sendBtn.disabled = v;
+    input.disabled = v;
+  }
+
+  async function send() {
+    const text = input.value.trim();
+    if (!text || busy) return;
+    if (!apiKey) {
+      gateErr.textContent = "Locked — enter the password first.";
+      return;
+    }
+
+    input.value = "";
+    input.style.height = "auto";
+    addMsg("user", text);
+    history.push({ role: "user", content: text });
+    setBusy(true);
+    showTyping();
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + apiKey
+        },
+        body: JSON.stringify({
+          model: localStorage.getItem("chat_model") || DEFAULT_MODEL,
+          messages: [{ role: "system", content: SYSTEM_PROMPT }, ...history],
+          temperature: 0.7
+        })
+      });
+      const data = await res.json();
+      hideTyping();
+      if (!res.ok) {
+        throw new Error((data.error && data.error.message) || ("API error " + res.status));
+      }
+      const reply = data.choices[0].message.content;
+      history.push({ role: "assistant", content: reply });
+      addMsg("bot", reply);
+    } catch (err) {
+      hideTyping();
+      addMsg("bot", "⚠️ " + err.message, "error");
+    } finally {
+      setBusy(false);
+      input.focus();
+    }
+  }
+
+  sendBtn.addEventListener("click", send);
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  });
+  input.addEventListener("input", () => {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 160) + "px";
+  });
+</script>
+</body>
+</html>
