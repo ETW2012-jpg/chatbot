@@ -25,34 +25,61 @@
     background: var(--bg);
     color: var(--text);
     display: flex;
-    flex-direction: column;
+    overflow: hidden;
   }
+
+  aside {
+    width: 250px; flex-shrink: 0; background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    transition: margin-left 0.2s ease;
+  }
+  aside.hidden { margin-left: -250px; }
+  .sidehead { padding: 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .sidehead .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .sidehead h1 { font-size: 15px; font-weight: 600; flex: 1; }
+  #newChat {
+    margin: 12px; padding: 10px; background: var(--accent); color: #fff;
+    border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  #newChat:hover { background: var(--accent-2); }
+  #threadList { flex: 1; overflow-y: auto; padding: 4px 8px 12px; }
+  .thread {
+    display: flex; align-items: center; gap: 6px; padding: 9px 10px; margin: 2px 0;
+    border-radius: 8px; cursor: pointer; font-size: 13.5px; color: var(--muted);
+  }
+  .thread:hover { background: var(--panel-2); }
+  .thread.active { background: var(--panel-2); color: var(--text); }
+  .thread .t-title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .thread .t-del {
+    background: none; border: none; color: var(--muted); cursor: pointer;
+    font-size: 13px; padding: 2px 4px; border-radius: 6px; visibility: hidden;
+  }
+  .thread:hover .t-del { visibility: visible; }
+  .thread .t-del:hover { color: #ffa198; }
+  .sidefoot { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--muted); font-size: 11.5px; }
+
+  .wrapper { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 20px;
-    background: var(--panel);
-    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 20px; background: var(--panel); border-bottom: 1px solid var(--border);
   }
-  header .dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 8px var(--accent);
-  }
-  header h1 { font-size: 16px; font-weight: 600; }
-  header .spacer { flex: 1; }
-  header button {
+  #menuBtn { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 2px 6px; }
+  #menuBtn:hover { color: var(--text); }
+  header h2 { font-size: 15px; font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  header button.tool {
     background: none; border: 1px solid var(--border); color: var(--muted);
     border-radius: 8px; padding: 5px 10px; cursor: pointer; font-size: 13px;
   }
-  header button:hover { color: var(--text); border-color: var(--muted); }
+  header button.tool:hover { color: var(--text); border-color: var(--muted); }
+  header button.tool.on { color: #7ee787; border-color: #2ea043; }
 
   main { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
   .msg { max-width: 78%; padding: 10px 14px; border-radius: 14px; line-height: 1.5; font-size: 15px; white-space: pre-wrap; word-wrap: break-word; }
   .msg.user { align-self: flex-end; background: var(--user-bubble); border-bottom-right-radius: 4px; }
   .msg.bot { align-self: flex-start; background: var(--panel-2); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
   .msg.bot.error { border-color: #b62324; color: #ffa198; }
+  .msg.webnote { align-self: center; background: none; border: 1px dashed var(--border); color: var(--muted); font-size: 12.5px; padding: 6px 12px; }
   .msg.typing { display: flex; gap: 5px; align-items: center; padding: 14px; }
   .msg.typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite; }
   .msg.typing span:nth-child(2) { animation-delay: 0.2s; }
@@ -76,7 +103,7 @@
   .hint { text-align: center; color: var(--muted); font-size: 12px; margin-top: 8px; }
 
   .gate {
-    position: fixed; inset: 0; background: var(--bg); z-index: 10;
+    position: fixed; inset: 0; background: var(--bg); z-index: 20;
     display: flex; align-items: center; justify-content: center; padding: 20px;
   }
   .gate .card {
@@ -100,14 +127,14 @@
   .gate .err { color: #ffa198; font-size: 13px; margin-top: 10px; min-height: 16px; }
 
   .setup {
-    position: fixed; inset: 0; background: rgba(13,17,23,0.92); z-index: 9;
+    position: fixed; inset: 0; background: rgba(13,17,23,0.92); z-index: 19;
     display: none; align-items: center; justify-content: center; padding: 20px;
   }
   .setup .card {
     background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
     padding: 32px; width: 100%; max-width: 380px; text-align: center;
   }
-  .setup h2 { font-size: 18px; margin-bottom: 14px; }
+  .setup h3 { font-size: 18px; margin-bottom: 14px; }
   .setup select {
     width: 100%; background: var(--panel-2); border: 1px solid var(--border);
     border-radius: 10px; color: var(--text); padding: 11px 14px; font-size: 14px;
@@ -120,7 +147,8 @@
   }
   .setup button:hover { background: var(--accent-2); }
 
-  @media (max-width: 600px) {
+  @media (max-width: 700px) {
+    aside { position: fixed; z-index: 15; height: 100%; }
     .msg { max-width: 90%; }
     main { padding: 14px; }
   }
@@ -131,7 +159,7 @@
 <div class="gate" id="gate">
   <div class="card">
     <div class="lock">🔒</div>
-    <h2>Private Chatbot</h2>
+    <h2>Chat</h2>
     <p>Use the password to use the chatbot.</p>
     <input type="password" id="gatePass" placeholder="Enter password" autocomplete="off">
     <button id="gateBtn">Unlock chat</button>
@@ -141,43 +169,53 @@
 
 <div class="setup" id="setup">
   <div class="card">
-    <h2>⚙️ AI model</h2>
+    <h3>⚙️ AI model</h3>
     <select id="modelSelect">
-      <option value="llama-3.3-70b-versatile">Llama 3.3 70B (smart)</option>
-      <option value="llama-3.1-8b-instant">Llama 3.1 8B (fast)</option>
-      <option value="openai/gpt-oss-120b">GPT-OSS 120B</option>
-      <option value="openai/gpt-oss-20b">GPT-OSS 20B</option>
+      <option value="openai/gpt-oss-120b">GPT-OSS 120B — smartest</option>
+      <option value="openai/gpt-oss-20b">GPT-OSS 20B — fast</option>
+      <option value="qwen/qwen3.8-27b">Qwen 3 27B</option>
+      <option value="allam-2-7b">ALLAM 2 7B — light</option>
     </select>
     <button id="saveModel">Save</button>
   </div>
 </div>
 
-<header>
-  <div class="dot"></div>
-  <h1>Private AI Chat</h1>
-  <div class="spacer"></div>
-  <button id="settingsBtn" title="Model settings">⚙ Model</button>
-  <button id="clearBtn" title="Clear conversation">🗑 Clear</button>
-</header>
-
-<main id="chat">
-  <div class="msg bot">Hi! This is a private AI chat. Ask me anything. 👋</div>
-</main>
-
-<footer>
-  <div class="inputrow">
-    <textarea id="input" rows="1" placeholder="Type a message… (Enter to send, Shift+Enter for a new line)"></textarea>
-    <button id="send">Send</button>
+<aside id="sidebar">
+  <div class="sidehead">
+    <div class="dot"></div>
+    <h1>Chat</h1>
   </div>
-  <div class="hint">Powered by Groq</div>
-</footer>
+  <button id="newChat">＋ New chat</button>
+  <div id="threadList"></div>
+  <div class="sidefoot">Chats are saved in this browser</div>
+</aside>
+
+<div class="wrapper">
+  <header>
+    <button id="menuBtn" title="Toggle chats">☰</button>
+    <h2 id="chatTitle">New chat</h2>
+    <button class="tool" id="webBtn" title="Ground answers with live Wikipedia lookups">🌐 Web: off</button>
+    <button class="tool" id="settingsBtn" title="Model settings">⚙ Model</button>
+    <button class="tool" id="clearBtn" title="Clear this chat">🗑 Clear</button>
+  </header>
+
+  <main id="chat"></main>
+
+  <footer>
+    <div class="inputrow">
+      <textarea id="input" rows="1" placeholder="Type a message… (Enter to send, Shift+Enter for a new line)"></textarea>
+      <button id="send">Send</button>
+    </div>
+    <div class="hint">Powered by Groq · chats saved in your browser</div>
+  </footer>
+</div>
 
 <script>
   const PASS_HASH = "f5ed5252baaab2792557554b48cd3b7a41a27c309bda4ed1f6765f51561ecc3b";
   const KEY_BLOB = {"salt":"ZAtRRF6jBomjQco0HH9ogQ==","iv":"bFt8vVVAfFlHooWf","data":"FCjqU8l48wJ/meM/PRntnYjey1W79Wc6o+m77IaZKfdu0Fj4YtnUbiaRMB54Dbq3bjU6TVmCsAlaSEOfLqAxmAAovbInogaj"};
   const API_URL = "https://api.groq.com/openai/v1/chat/completions";
-  const DEFAULT_MODEL = "llama-3.3-70b-versatile";
-  const SYSTEM_PROMPT = "You are a friendly, helpful assistant on a small private website. Keep answers clear and concise.";
+  const DEFAULT_MODEL = "openai/gpt-oss-120b";
+  const BASE_SYSTEM = "You are a friendly, helpful assistant. Keep answers clear and concise. Today's date is " + new Date().toDateString() + ".";
 
   const gate = document.getElementById("gate");
   const gatePass = document.getElementById("gatePass");
@@ -188,13 +226,21 @@
   const saveModelBtn = document.getElementById("saveModel");
   const settingsBtn = document.getElementById("settingsBtn");
   const clearBtn = document.getElementById("clearBtn");
+  const webBtn = document.getElementById("webBtn");
+  const menuBtn = document.getElementById("menuBtn");
+  const sidebar = document.getElementById("sidebar");
+  const newChatBtn = document.getElementById("newChat");
+  const threadList = document.getElementById("threadList");
+  const chatTitle = document.getElementById("chatTitle");
   const chat = document.getElementById("chat");
   const input = document.getElementById("input");
   const sendBtn = document.getElementById("send");
 
-  let history = [];
-  let busy = false;
   let apiKey = null;
+  let busy = false;
+  let webOn = false;
+  let threads = [];
+  let currentId = null;
 
   async function sha256(text) {
     const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
@@ -202,7 +248,6 @@
   }
 
   const b64 = {
-    enc: buf => btoa(String.fromCharCode(...new Uint8Array(buf))),
     dec: str => Uint8Array.from(atob(str), c => c.charCodeAt(0))
   };
 
@@ -225,6 +270,7 @@
 
   function unlock() {
     gate.style.display = "none";
+    initChats();
     input.focus();
   }
 
@@ -263,21 +309,126 @@
     });
   }
 
+  function loadThreads() {
+    try { threads = JSON.parse(localStorage.getItem("chat_threads") || "[]"); } catch (e) { threads = []; }
+  }
+  function saveThreads() {
+    localStorage.setItem("chat_threads", JSON.stringify(threads));
+  }
+  function currentThread() {
+    return threads.find(t => t.id === currentId) || null;
+  }
+
+  function initChats() {
+    loadThreads();
+    currentId = Number(localStorage.getItem("chat_current")) || null;
+    if (!currentThread()) {
+      if (threads.length > 0) {
+        currentId = threads[0].id;
+      } else {
+        createThread(false);
+        return;
+      }
+    }
+    renderAll();
+  }
+
+  function createThread(render = true) {
+    const t = { id: Date.now(), title: "New chat", model: localStorage.getItem("chat_model") || DEFAULT_MODEL, messages: [] };
+    threads.unshift(t);
+    currentId = t.id;
+    saveThreads();
+    if (render) renderAll();
+    input.focus();
+  }
+
+  function openThread(id) {
+    currentId = id;
+    localStorage.setItem("chat_current", id);
+    renderAll();
+    input.focus();
+  }
+
+  function deleteThread(id, ev) {
+    ev.stopPropagation();
+    threads = threads.filter(t => t.id !== id);
+    if (currentId === id) currentId = threads.length ? threads[0].id : null;
+    if (!currentId && threads.length === 0) {
+      createThread(false);
+    } else {
+      saveThreads();
+    }
+    renderAll();
+  }
+
+  function renderSidebar() {
+    threadList.innerHTML = "";
+    threads.forEach(t => {
+      const div = document.createElement("div");
+      div.className = "thread" + (t.id === currentId ? " active" : "");
+      const title = document.createElement("span");
+      title.className = "t-title";
+      title.textContent = t.title;
+      const del = document.createElement("button");
+      del.className = "t-del";
+      del.textContent = "✕";
+      del.title = "Delete chat";
+      del.addEventListener("click", e => deleteThread(t.id, e));
+      div.appendChild(title);
+      div.appendChild(del);
+      div.addEventListener("click", () => openThread(t.id));
+      threadList.appendChild(div);
+    });
+  }
+
+  function renderMessages() {
+    const t = currentThread();
+    chat.innerHTML = "";
+    if (!t) return;
+    if (t.messages.length === 0) {
+      addMsg("bot", "Hi! Ask me anything. Tip: turn on 🌐 Web (top right) for answers grounded in live Wikipedia lookups — good for recent events.");
+    }
+    t.messages.forEach(m => addMsg(m.role === "user" ? "user" : "bot", m.content));
+    chatTitle.textContent = t.title;
+  }
+
+  function renderAll() {
+    localStorage.setItem("chat_current", currentId || "");
+    renderSidebar();
+    renderMessages();
+  }
+
+  newChatBtn.addEventListener("click", () => createThread());
+  menuBtn.addEventListener("click", () => sidebar.classList.toggle("hidden"));
+
   saveModelBtn.addEventListener("click", () => {
     localStorage.setItem("chat_model", modelSelect.value);
+    const t = currentThread();
+    if (t) t.model = modelSelect.value;
+    saveThreads();
     setup.style.display = "none";
     input.focus();
   });
 
   settingsBtn.addEventListener("click", () => {
-    modelSelect.value = localStorage.getItem("chat_model") || DEFAULT_MODEL;
+    const t = currentThread();
+    modelSelect.value = (t && t.model) || localStorage.getItem("chat_model") || DEFAULT_MODEL;
     setup.style.display = "flex";
   });
 
+  webBtn.addEventListener("click", () => {
+    webOn = !webOn;
+    webBtn.textContent = webOn ? "🌐 Web: on" : "🌐 Web: off";
+    webBtn.classList.toggle("on", webOn);
+  });
+
   clearBtn.addEventListener("click", () => {
-    history = [];
-    chat.innerHTML = "";
-    addMsg("bot", "Conversation cleared. What's next?");
+    const t = currentThread();
+    if (!t) return;
+    t.messages = [];
+    t.title = "New chat";
+    saveThreads();
+    renderAll();
   });
 
   function addMsg(role, text, cls) {
@@ -308,9 +459,34 @@
     input.disabled = v;
   }
 
+  async function wikiLookup(query) {
+    try {
+      const s = await fetch("https://en.wikipedia.org/w/api.php?action=query&list=search&srlimit=3&srsearch=" +
+        encodeURIComponent(query) + "&format=json&origin=*").then(r => r.json());
+      const hits = (s.query && s.query.search) || [];
+      if (!hits.length) return null;
+      const ids = hits.map(h => h.pageid).join("|");
+      const e = await fetch("https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&pageids=" +
+        ids + "&format=json&origin=*").then(r => r.json());
+      const pages = (e.query && e.query.pages) || {};
+      let out = "";
+      for (const id of ids.split("|")) {
+        const p = pages[id];
+        if (p && p.extract) {
+          out += "• " + p.title + ": " + p.extract.replace(/\s+/g, " ").slice(0, 900) + "\n\n";
+        }
+      }
+      return out.trim() || null;
+    } catch (err) {
+      return null;
+    }
+  }
+
   async function send() {
     const text = input.value.trim();
     if (!text || busy) return;
+    const t = currentThread();
+    if (!t) { createThread(false); return send(); }
     if (!apiKey) {
       gateErr.textContent = "Locked — enter the password first.";
       return;
@@ -319,9 +495,26 @@
     input.value = "";
     input.style.height = "auto";
     addMsg("user", text);
-    history.push({ role: "user", content: text });
+    t.messages.push({ role: "user", content: text });
+    if (t.title === "New chat") {
+      t.title = text.slice(0, 40) + (text.length > 40 ? "…" : "");
+      chatTitle.textContent = t.title;
+    }
+    saveThreads();
+    renderSidebar();
     setBusy(true);
     showTyping();
+
+    let system = BASE_SYSTEM;
+    if (webOn) {
+      const found = await wikiLookup(text);
+      if (found) {
+        addMsg("webnote", "🌐 Grounded with live Wikipedia lookups");
+        system += "\n\nLive web results retrieved just now from Wikipedia (use these as current facts):\n" + found;
+      } else {
+        addMsg("webnote", "🌐 No web results found — answering from model knowledge");
+      }
+    }
 
     try {
       const res = await fetch(API_URL, {
@@ -331,9 +524,8 @@
           "Authorization": "Bearer " + apiKey
         },
         body: JSON.stringify({
-          model: localStorage.getItem("chat_model") || DEFAULT_MODEL,
-          messages: [{ role: "system", content: SYSTEM_PROMPT }, ...history],
-          temperature: 0.7
+          model: t.model || DEFAULT_MODEL,
+          messages: [{ role: "system", content: system }, ...t.messages.slice(-30)]
         })
       });
       const data = await res.json();
@@ -341,8 +533,9 @@
       if (!res.ok) {
         throw new Error((data.error && data.error.message) || ("API error " + res.status));
       }
-      const reply = data.choices[0].message.content;
-      history.push({ role: "assistant", content: reply });
+      const reply = (data.choices[0].message.content || "").trim() || "(The model returned an empty reply — try again or pick another model.)";
+      t.messages.push({ role: "assistant", content: reply });
+      saveThreads();
       addMsg("bot", reply);
     } catch (err) {
       hideTyping();
